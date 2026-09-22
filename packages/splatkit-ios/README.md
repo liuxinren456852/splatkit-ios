@@ -2,11 +2,12 @@
 
 Gaussian splat rendering for iOS: the shared SplatKit engine drawn with Metal, wrapped in a `UIView`.
 Requires iOS 17+ and Apple GPU family 7+ (A14/M1+); unsupported GPUs report unavailable.
+Run it on a physical device: the iOS Simulator does not report family 7, so `SplatMetalView.isAvailable` is false and the view renders black.
 
 ## Use it
 
 Swift Package Manager: add `https://github.com/Xget7/splatkit-ios`, product `SplatKit`, then `import SplatKit`.
-Choose exact version `0.1.0-alpha.4`.
+Choose exact version `0.1.0-alpha.5`.
 
 For source builds, build the static libraries with `scripts/build-ios.sh` from the repository root, then add to your target:
 
@@ -48,7 +49,6 @@ Forward `resume()`, `pause()` and `release()` from the host's lifecycle; the lay
 | `look(deltaYaw:deltaPitch:)` | Turns the camera by radians, for a look pad or mouse |
 | `setCharacter(_:)`, `character` | The walker's shape in walk mode: `CharacterSettings(eyeHeight:bodyRadius:stepHeight:)` |
 | `touchLookEnabled`, `lookSensitivity` | Whether a one-finger drag turns the camera, and radians per point dragged |
-| `motionToggleEnabled` | Whether a double tap anywhere in the view toggles the gyroscope |
 | `setMotionEnabled(_:)`, `isMotionEnabled` | Gyroscope driven camera |
 | `cameraPoseInterval` | Seconds between `cameraPoseChanged` delegate calls; 0, the default, never |
 | `startBenchmark(seconds:)` | A reproducible turn with the frame time distribution logged |
@@ -69,13 +69,13 @@ splatView.renderPolicy = policy
 ```
 
 They composite 16×16 tiles in compute on top of the GPU's own tiling, so on distant or sparse scenes they only add work.
-ISS at a 45 m orbit on an iPhone 17 Pro drew the same 1.96M splats at 22-23 FPS with tiles and 31 FPS without.
+ISS at a 45 m orbit on an iPhone 17 Pro drew the same 1.98M splats at 18.9 FPS with tiles and 23.1 FPS without.
 The first request builds the tile pipelines; switching back to hardware frees the tile scratch.
 `computeTile` is not built and falls back to hardware with a warning.
 
-Touch: a one-finger drag looks around, and a double tap anywhere in the view toggles the gyroscope.
+Touch: a one-finger drag looks around.
 The view ships no walking control; the host draws its own, wherever it likes, and drives it with `setWalkVelocity` or `walk`.
-`lookSensitivity` tunes the drag, and `touchLookEnabled` and `motionToggleEnabled` turn the two gestures off.
+`lookSensitivity` tunes the drag, and `touchLookEnabled` turns it off.
 
 ## Layout
 
